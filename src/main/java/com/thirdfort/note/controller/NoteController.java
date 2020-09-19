@@ -33,4 +33,14 @@ public class NoteController {
     void deleteNote(@RequestBody Note note) {
         noteService.deleteNote(note);
     }
+
+    @PutMapping("/archive")
+    void archive(@RequestBody Note note) {
+        noteService.archiveNote(note);
+    }
+
+    @PutMapping("/unarchive")
+    void unarchive(@RequestBody Note note) {
+        noteService.unarchiveNote(note);
+    }
 }

@@ -36,5 +36,17 @@ public class NoteService {
     public void deleteNote(Note note) {
         noteRepository.delete(note);
     }
+
+    public void archiveNote(Note note) {
+        Note unarchiveNote = noteRepository.findByNoteId(note.getNoteId());
+        unarchiveNote.setArchive(true);
+        noteRepository.save(unarchiveNote);
+    }
+
+    public void unarchiveNote(Note note) {
+        Note archiveNote = noteRepository.findByNoteId(note.getNoteId());
+        archiveNote.setArchive(false);
+        noteRepository.save(archiveNote);
+    }
 }
 
