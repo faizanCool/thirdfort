@@ -1,6 +1,7 @@
 # Thirdfort Coding Challenge
 
 1. How to run the application?
+   * need java 11
    * open command prompt
    * move to folder src/main/resources/
    * execute command "java -jar note.jar"
