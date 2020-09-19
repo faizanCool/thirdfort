@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS note;
+
+CREATE TABLE note (
+  note_id BIGINT AUTO_INCREMENT  PRIMARY KEY,
+  is_archive BOOLEAN NOT NULL,
+  note_content VARCHAR(250) NOT NULL,
+  user_id VARCHAR(50) NOT NULL
+);
