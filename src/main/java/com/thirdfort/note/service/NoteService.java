@@ -46,14 +46,14 @@ public class NoteService {
         noteRepository.delete(note);
     }
 
-    public void archiveNote(Note note) {
-        Note unarchiveNote = noteRepository.findByNoteId(note.getNoteId());
+    public void archiveNote(Note note) throws Exception{
+        Note unarchiveNote = validateNoteExistence(note);
         unarchiveNote.setArchive(true);
         noteRepository.save(unarchiveNote);
     }
 
-    public void unarchiveNote(Note note) {
-        Note archiveNote = noteRepository.findByNoteId(note.getNoteId());
+    public void unarchiveNote(Note note) throws Exception{
+        Note archiveNote = validateNoteExistence(note);
         archiveNote.setArchive(false);
         noteRepository.save(archiveNote);
     }
