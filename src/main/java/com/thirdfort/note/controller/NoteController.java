@@ -48,4 +48,9 @@ public class NoteController {
     void unarchive(@RequestBody Note note) throws Exception {
         noteService.unarchiveNote(note);
     }
+
+    @GetMapping("/getnote")
+    void findNoteById(@RequestBody Note note) throws Exception {
+        noteService.findNoteById(note);
+    }
 }

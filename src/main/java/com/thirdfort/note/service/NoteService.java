@@ -39,7 +39,7 @@ public class NoteService {
     }
 
     public List<Note> fetchFilteredNotes(Note note) {
-        return noteRepository.findByUserIdAndArchive(note.getUserId(), note.getArchive());
+        return noteRepository.filterNotes(note.getUserId(), note.getArchive(), note.getNoteTitle() == null ? null: note.getNoteTitle().trim());
     }
 
     public void deleteNote(Note note) {
@@ -56,6 +56,10 @@ public class NoteService {
         Note archiveNote = validateNoteExistence(note);
         archiveNote.setArchive(false);
         noteRepository.save(archiveNote);
+    }
+
+    public Note findNoteById(Note note) throws Exception {
+        return validateNoteExistence(note);
     }
 
     private void validateNote(Note note) throws Exception {
