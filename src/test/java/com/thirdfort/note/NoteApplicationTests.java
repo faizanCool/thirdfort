@@ -24,17 +24,44 @@ class NoteApplicationTests {
 	}
 
 	@Test
+    void findNoteById() throws Exception {
+	    Note addNote = new Note();
+	    addNote.setNoteTitle("test");
+	    addNote.setNoteContent("test c");
+	    addNote.setArchive(false);
+	    addNote.setUserId("user_1");
+	    Integer id = noteService.addNote(addNote);
+
+	    Note fetchNote = noteService.findNoteById(addNote);
+	    Assertions.assertEquals(id, fetchNote.getNoteId());
+
+	    fetchNote.setNoteId(999);
+        Exception exception = Assertions.assertThrows(Exception.class, () -> {
+            noteService.findNoteById(fetchNote);
+        });
+        Assertions.assertEquals(Util.ERROR_MESSAGE.NOTE_DOES_NOT_EXISTS, exception.getMessage());
+
+        Note note = new Note();
+        exception = Assertions.assertThrows(Exception.class, () -> {
+            noteService.findNoteById(note);
+        });
+        Assertions.assertEquals(Util.ERROR_MESSAGE.EMPTY_NOTE_ID, exception.getMessage());
+    }
+
+	@Test
 	void addUnarchiveNoteForUser1() throws Exception {
 		Note note = new Note();
 		note.setArchive(false);
 		note.setNoteContent("user1 unarchived note");
 		note.setUserId("user_1");
-		Integer noteId = noteService.saveOrUpdateNote(note);
-		List<Note> notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals("user_1", notes.get(0).getUserId());
-		Assertions.assertEquals(noteId, notes.get(0).getNoteId());
-		Assertions.assertEquals("user1 unarchived note", notes.get(0).getNoteContent());
-		Assertions.assertEquals(false, notes.get(0).isArchive());
+		note.setNoteTitle("title test1 title");
+		Integer noteId = noteService.addNote(note);
+
+		Note fetchNote = noteService.findNoteById(note);
+		Assertions.assertEquals("user_1", fetchNote.getUserId());
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
+		Assertions.assertEquals("user1 unarchived note", fetchNote.getNoteContent());
+		Assertions.assertEquals(false, fetchNote.getArchive());
 	}
 
 	@Test
@@ -43,12 +70,14 @@ class NoteApplicationTests {
 		note.setArchive(true);
 		note.setNoteContent("user1 archived note");
 		note.setUserId("user_1");
-		Integer noteId = noteService.saveOrUpdateNote(note);
-		List<Note> notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals("user_1", notes.get(0).getUserId());
-		Assertions.assertEquals(noteId, notes.get(0).getNoteId());
-		Assertions.assertEquals("user1 archived note", notes.get(0).getNoteContent());
-		Assertions.assertEquals(true, notes.get(0).isArchive());
+        note.setNoteTitle("title test1 title");
+		Integer noteId = noteService.addNote(note);
+
+		Note fetchNote = noteService.findNoteById(note);
+		Assertions.assertEquals("user_1", fetchNote.getUserId());
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
+		Assertions.assertEquals("user1 archived note", fetchNote.getNoteContent());
+		Assertions.assertEquals(true, fetchNote.getArchive());
 	}
 
 	@Test
@@ -83,7 +112,7 @@ class NoteApplicationTests {
 		Assertions.assertEquals(1, user1ArchiveNotes.size());
 		user1ArchiveNotes.forEach(userNote -> {
 			Assertions.assertEquals("user_1", userNote.getUserId());
-			Assertions.assertEquals(true, userNote.isArchive());
+			Assertions.assertEquals(true, userNote.getArchive());
 		});
 
 
@@ -104,7 +133,7 @@ class NoteApplicationTests {
 		Assertions.assertEquals(1, user1UnArchiveNotes.size());
 		user1UnArchiveNotes.forEach(userNote -> {
 			Assertions.assertEquals("user_1", userNote.getUserId());
-			Assertions.assertEquals(false, userNote.isArchive());
+			Assertions.assertEquals(false, userNote.getArchive());
 		});
 
 		note.setUserId("user_2");
@@ -112,7 +141,7 @@ class NoteApplicationTests {
 		Assertions.assertEquals(1, user2UnArchiveNotes.size());
 		user2UnArchiveNotes.forEach(userNote -> {
 			Assertions.assertEquals("user_2", userNote.getUserId());
-			Assertions.assertEquals(false, userNote.isArchive());
+			Assertions.assertEquals(false, userNote.getArchive());
 		});
 	}
 
@@ -122,22 +151,20 @@ class NoteApplicationTests {
 		unarchiveNote.setArchive(false);
 		unarchiveNote.setNoteContent("user1 unarchived note");
 		unarchiveNote.setUserId("user_1");
-		int noteId = noteService.saveOrUpdateNote(unarchiveNote);
+		unarchiveNote.setNoteTitle("archive note");
+		int noteId = noteService.addNote(unarchiveNote);
 
-		Note note = new Note();
-		note.setUserId("user_1");
-		List<Note> user1Notes = noteService.fetchNoteByUser(note);
+		Note fetchNote = noteService.findNoteById(unarchiveNote);
 
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
-		Assertions.assertEquals(false, user1Notes.get(0).isArchive());
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
+		Assertions.assertEquals(false, fetchNote.getArchive());
 
-		Note archiveNote = user1Notes.get(0);
-		archiveNote.setArchive(true);
-		noteService.archiveNote(archiveNote);
+		fetchNote.setArchive(true);
+		noteService.archiveNote(fetchNote);
 
-		user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
-		Assertions.assertEquals(true, user1Notes.get(0).isArchive());
+		Note archivedNote = noteService.findNoteById(fetchNote);
+		Assertions.assertEquals(noteId, archivedNote.getNoteId());
+		Assertions.assertEquals(true, archivedNote.getArchive());
 	}
 
 	@Test
@@ -146,61 +173,83 @@ class NoteApplicationTests {
 		archiveNote.setArchive(true);
 		archiveNote.setNoteContent("user1 archived note");
 		archiveNote.setUserId("user_1");
-		int noteId = noteService.saveOrUpdateNote(archiveNote);
+		archiveNote.setNoteTitle("unarchive note");
+		int noteId = noteService.addNote(archiveNote);
 
-		Note note = new Note();
-		note.setUserId("user_1");
-		List<Note> user1Notes = noteService.fetchNoteByUser(note);
+		Note fetchNote = noteService.findNoteById(archiveNote);
 
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
-		Assertions.assertEquals(true, user1Notes.get(0).isArchive());
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
+		Assertions.assertEquals(true, fetchNote.getArchive());
 
-		Note unarchiveNote = user1Notes.get(0);
-		unarchiveNote.setArchive(false);
-		noteService.unarchiveNote(unarchiveNote);
+		fetchNote.setArchive(false);
+		noteService.unarchiveNote(fetchNote);
 
-		user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
-		Assertions.assertEquals(false, user1Notes.get(0).isArchive());
+		Note unarchiveNote = noteService.findNoteById(fetchNote);
+		Assertions.assertEquals(noteId, unarchiveNote.getNoteId());
+		Assertions.assertEquals(false, unarchiveNote.getArchive());
 	}
 
 	@Test
-	void updateNoteContent() throws Exception {
+	void updateNoteContentAndNoteTitle() throws Exception {
 		Note unarchiveNote = new Note();
 		unarchiveNote.setArchive(true);
 		unarchiveNote.setNoteContent("user1 unarchived note");
 		unarchiveNote.setUserId("user_1");
-		int noteId = noteService.saveOrUpdateNote(unarchiveNote);
+		unarchiveNote.setNoteTitle("before update");
+		int noteId = noteService.addNote(unarchiveNote);
 
-		Note note = new Note();
-		note.setUserId("user_1");
-		List<Note> user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals("user1 unarchived note", user1Notes.get(0).getNoteContent());
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
+		Note note = noteService.findNoteById(unarchiveNote);
+		Assertions.assertEquals("user1 unarchived note", note.getNoteContent());
+        Assertions.assertEquals("before update", note.getNoteTitle());
+		Assertions.assertEquals(noteId, note.getNoteId());
 
 		unarchiveNote.setNoteContent("user1 updated unarchived note");
-		noteService.saveOrUpdateNote(unarchiveNote);
+		unarchiveNote.setNoteTitle("after update");
+		noteService.updateNote(unarchiveNote);
 
-		user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals("user1 updated unarchived note", user1Notes.get(0).getNoteContent());
-		Assertions.assertEquals(noteId, user1Notes.get(0).getNoteId());
+		Note fetchNote = noteService.findNoteById(unarchiveNote);
+
+		Assertions.assertEquals("user1 updated unarchived note", fetchNote.getNoteContent());
+        Assertions.assertEquals("after update", fetchNote.getNoteTitle());
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
+
+		fetchNote.setNoteTitle("this is additional test");
+		noteService.updateNote(fetchNote);
+
+		// from this assertions, we can clarify that note content doesnot change when update only note title
+        fetchNote = noteService.findNoteById(unarchiveNote);
+        Assertions.assertEquals("user1 updated unarchived note", fetchNote.getNoteContent());
+        Assertions.assertEquals("this is additional test", fetchNote.getNoteTitle());
+        Assertions.assertEquals(noteId, fetchNote.getNoteId());
+
+        fetchNote.setNoteContent("this also changed");
+        noteService.updateNote(fetchNote);
+        fetchNote = noteService.findNoteById(unarchiveNote);
+
+        // from this assertions, we can clarify that note title doesnot change when update only note content
+        Assertions.assertEquals("this also changed", fetchNote.getNoteContent());
+        Assertions.assertEquals("this is additional test", fetchNote.getNoteTitle());
+        Assertions.assertEquals(noteId, fetchNote.getNoteId());
+
+
 	}
 
 	@Test
-	void noteContentCantBeEmpty() throws Exception {
+	void noteContentCantBeEmpty() {
 		Note unarchiveNote = new Note();
 		unarchiveNote.setArchive(false);
 		unarchiveNote.setNoteContent("");
+		unarchiveNote.setNoteTitle("test");
 		unarchiveNote.setUserId("user_1");
 
 		Exception exception = Assertions.assertThrows(Exception.class, () -> {
-			noteService.saveOrUpdateNote(unarchiveNote);
+			noteService.addNote(unarchiveNote);
 		});
-		Assertions.assertEquals(Util.ERROR_MESSAGE.INVALID_NOTE, exception.getMessage());
+		Assertions.assertEquals(Util.ERROR_MESSAGE.EMPTY_NOTE_CONTENT, exception.getMessage());
 	}
 
 	@Test
-	void noteContentCantBeExceed250Char() throws Exception {
+	void noteContentCantBeExceed250Char() {
 		String content = "1234567890";
 		content = content.repeat(25);
 		content += "1";
@@ -210,13 +259,48 @@ class NoteApplicationTests {
 		Note unarchiveNote = new Note();
 		unarchiveNote.setArchive(false);
 		unarchiveNote.setNoteContent(content);
+		unarchiveNote.setNoteTitle("test");
 		unarchiveNote.setUserId("user_1");
 
 		Exception exception = Assertions.assertThrows(Exception.class, () -> {
-			noteService.saveOrUpdateNote(unarchiveNote);
+			noteService.addNote(unarchiveNote);
 		});
 		Assertions.assertEquals(Util.ERROR_MESSAGE.EXCEED_NOTE_SIZE, exception.getMessage());
 	}
+
+    @Test
+    void noteTitleCantBeEmpty() {
+        Note unarchiveNote = new Note();
+        unarchiveNote.setArchive(false);
+        unarchiveNote.setNoteContent("testing content");
+        unarchiveNote.setNoteTitle("");
+        unarchiveNote.setUserId("user_1");
+
+        Exception exception = Assertions.assertThrows(Exception.class, () -> {
+            noteService.addNote(unarchiveNote);
+        });
+        Assertions.assertEquals(Util.ERROR_MESSAGE.EMPTY_NOTE_TITLE, exception.getMessage());
+    }
+
+    @Test
+    void noteTitleCantBeExceed50Char() {
+        String title = "1234567890";
+        title = title.repeat(5);
+        title += "1";
+
+        Assertions.assertTrue(title.length() > Util.MAX_NOTE_TITLE_LENGTH);
+
+        Note unarchiveNote = new Note();
+        unarchiveNote.setArchive(false);
+        unarchiveNote.setNoteContent("test ");
+        unarchiveNote.setNoteTitle(title);
+        unarchiveNote.setUserId("user_1");
+
+        Exception exception = Assertions.assertThrows(Exception.class, () -> {
+            noteService.addNote(unarchiveNote);
+        });
+        Assertions.assertEquals(Util.ERROR_MESSAGE.EXCEED_NOTE_TITLE_SIZE, exception.getMessage());
+    }
 
 	@Test
 	void deleteNote() throws Exception {
@@ -224,19 +308,18 @@ class NoteApplicationTests {
 		unarchiveNote.setArchive(false);
 		unarchiveNote.setNoteContent("user1 unarchive note");
 		unarchiveNote.setUserId("user_1");
-		int noteId = noteService.saveOrUpdateNote(unarchiveNote);
+		unarchiveNote.setNoteTitle("delete note");
+		int noteId = noteService.addNote(unarchiveNote);
 
-		Note note = new Note();
-		note.setUserId("user_1");
-		List<Note> user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals(1, user1Notes.size());
+		Note fetchNote = noteService.findNoteById(unarchiveNote);
+		Assertions.assertEquals(noteId, fetchNote.getNoteId());
 
-		Note deleteNote = new Note();
-		deleteNote.setNoteId(noteId);
-		noteService.deleteNote(deleteNote);
+		noteService.deleteNote(fetchNote);
 
-		user1Notes = noteService.fetchNoteByUser(note);
-		Assertions.assertEquals(0, user1Notes.size());
+        Exception exception = Assertions.assertThrows(Exception.class, () -> {
+            noteService.findNoteById(fetchNote);
+        });
+        Assertions.assertEquals(Util.ERROR_MESSAGE.NOTE_DOES_NOT_EXISTS, exception.getMessage());
 	}
 
 	private void addNotes() throws Exception {
@@ -245,20 +328,23 @@ class NoteApplicationTests {
 		note1.setArchive(false);
 		note1.setNoteContent("user2 unarchived note");
 		note1.setUserId("user_2");
-		noteService.saveOrUpdateNote(note1);
+        note1.setNoteTitle("title filter1 test title");
+		noteService.addNote(note1);
 
 		// unarchive note for user_1
 		Note note2 = new Note();
 		note2.setArchive(false);
 		note2.setNoteContent("user1 unarchived note");
 		note2.setUserId("user_1");
-		noteService.saveOrUpdateNote(note2);
+        note2.setNoteTitle("title filter1 test title");
+		noteService.addNote(note2);
 
 		// archive note for user_1
 		Note note3 = new Note();
 		note3.setArchive(true);
 		note3.setNoteContent("user1 archived note");
 		note3.setUserId("user_1");
-		noteService.saveOrUpdateNote(note3);
+        note3.setNoteTitle("title filter2 test title");
+		noteService.addNote(note3);
 	}
 }
