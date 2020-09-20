@@ -14,9 +14,14 @@ public class NoteController {
     @Autowired
     NoteService noteService;
 
-    @PostMapping("/save")
-    Integer addOrUpdateNote(@RequestBody Note note) throws Exception {
-        return noteService.saveOrUpdateNote(note);
+    @PostMapping("/add")
+    Integer addNote(@RequestBody Note note) throws Exception {
+        return noteService.addNote(note);
+    }
+
+    @PutMapping("/update")
+    void updateNote(@RequestBody Note note) throws Exception {
+        noteService.updateNote(note);
     }
 
     @GetMapping("/all")

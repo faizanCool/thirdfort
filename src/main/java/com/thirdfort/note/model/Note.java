@@ -14,7 +14,10 @@ public class Note {
     private Integer noteId;
 
     @Column(name = "is_archive")
-    private boolean archive;
+    private Boolean archive;
+
+    @Column(name = "note_title")
+    private String noteTitle;
 
     @Column(name = "note_content")
     private String noteContent;
