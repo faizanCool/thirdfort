@@ -24,7 +24,7 @@ public class NoteController {
         noteService.updateNote(note);
     }
 
-    @GetMapping("/all")
+    @GetMapping("/")
     List<Note> fetchAllNotes(@RequestBody Note note) {
         return noteService.fetchNoteByUser(note);
     }
@@ -40,12 +40,12 @@ public class NoteController {
     }
 
     @PutMapping("/archive")
-    void archive(@RequestBody Note note) {
+    void archive(@RequestBody Note note) throws Exception {
         noteService.archiveNote(note);
     }
 
     @PutMapping("/unarchive")
-    void unarchive(@RequestBody Note note) {
+    void unarchive(@RequestBody Note note) throws Exception {
         noteService.unarchiveNote(note);
     }
 }

@@ -35,7 +35,7 @@ public class NoteService {
     }
 
     public List<Note> fetchNoteByUser(Note note) {
-        return noteRepository.findByUserId(note.getUserId());
+        return noteRepository.findAllByUser(note.getUserId());
     }
 
     public List<Note> fetchFilteredNotes(Note note) {
